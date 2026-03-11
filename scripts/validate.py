@@ -31,12 +31,26 @@ CARPENTRY_VALUES = {"swc", "dc", "lc", "cp", "incubator"}
 FLAVOR_VALUES = {"python", "r"}
 MODE_VALUES = {"in-person", "online", "hybrid"}
 
+# None means the curriculum field is flexible / no fixed allowed set
 CURRICULUM_BY_CARPENTRY = {
     "swc": {"swc-inflammation", "swc-gapminder"},
     "dc": {"dc-ecology", "dc-astronomy", "dc-genomics", "dc-geospatial", "dc-image", "dc-socsci"},
-    "lc": None,       # None = flexible/any
+    "lc": None,
     "cp": None,
     "incubator": None,
+}
+
+# ISO 3166-1 alpha-2 sample set — not exhaustive, catches obvious errors
+KNOWN_COUNTRIES = {
+    "us", "gb", "ca", "au", "nz", "de", "fr", "es", "it", "nl", "se",
+    "no", "dk", "fi", "ch", "at", "be", "pt", "ie", "za", "br", "mx",
+    "jp", "kr", "cn", "in", "sg", "nz",
+}
+
+# ISO 639-1 sample set
+KNOWN_LANGUAGES = {
+    "en", "fr", "es", "de", "it", "pt", "nl", "sv", "no", "da", "fi",
+    "ja", "ko", "zh", "ar", "ru", "pl", "cs", "hu", "ro", "tr",
 }
 
 # Patterns that indicate an unfilled placeholder (beyond "TBD")
@@ -62,7 +76,7 @@ def _fmt(label, msg):
 
 def _ok(msg):    print(_fmt("OK", msg))
 def _warn(msg):  print(_fmt("WARN", msg))
-def _err(msg):   print(_fmt("ERROR", msg))
+def _err(msg):   print(_fmt("ERROR", msg))   # used for inline reporting, not final list
 
 
 # ---------------------------------------------------------------------------
@@ -70,7 +84,7 @@ def _err(msg):   print(_fmt("ERROR", msg))
 # ---------------------------------------------------------------------------
 
 def get_field(data, dotted_path):
-    """Return (value, found). value is None when not found or explicitly null."""
+    """Return (value, found). value is None when explicitly null."""
     parts = dotted_path.split(".")
     obj = data
     for part in parts:
@@ -172,9 +186,10 @@ def validate(facts_path: Path):
     if carpentry and carpentry in CURRICULUM_BY_CARPENTRY:
         allowed = CURRICULUM_BY_CARPENTRY[carpentry]
         if allowed is None:
-            if curriculum:
+            # flexible — any value or TBD is fine
+            if curriculum and not is_tbd(str(curriculum)):
                 _ok(f"workshop.curriculum = {curriculum}")
-        elif not curriculum:
+        elif not curriculum or is_tbd(str(curriculum)):
             if carpentry == "dc":
                 errors.append(
                     f"workshop.curriculum is required for Data Carpentry. "
@@ -244,6 +259,52 @@ def validate(facts_path: Path):
     else:
         _ok(f"event.venue = {venue!r}")
 
+    # --- event.address ---
+    address, _ = get_field(data, "event.address")
+    if not address:
+        errors.append(
+            "event.address is required — use the full street address for in-person, "
+            "or \"online\" for virtual workshops"
+        )
+    else:
+        _ok(f"event.address = {address!r}")
+
+    # --- event.country ---
+    country, _ = get_field(data, "event.country")
+    if not country:
+        errors.append("event.country is required (ISO 3166-1 alpha-2, e.g. us, gb, ca)")
+    elif not isinstance(country, str) or len(country) != 2 or not country.isalpha():
+        errors.append(
+            f"event.country '{country}' must be a 2-letter ISO country code (e.g. us, gb, ca)"
+        )
+    else:
+        country_lower = country.lower()
+        if country_lower not in KNOWN_COUNTRIES:
+            warnings.append(
+                f"event.country '{country}' is not in the known country list — "
+                "verify it is a valid ISO 3166-1 alpha-2 code"
+            )
+        else:
+            _ok(f"event.country = {country}")
+
+    # --- event.language ---
+    language, _ = get_field(data, "event.language")
+    if not language:
+        errors.append("event.language is required (ISO 639-1, e.g. en, fr, es)")
+    elif not isinstance(language, str) or len(language) != 2 or not language.isalpha():
+        errors.append(
+            f"event.language '{language}' must be a 2-letter ISO language code (e.g. en, fr, es)"
+        )
+    else:
+        lang_lower = language.lower()
+        if lang_lower not in KNOWN_LANGUAGES:
+            warnings.append(
+                f"event.language '{language}' is not in the known language list — "
+                "verify it is a valid ISO 639-1 code"
+            )
+        else:
+            _ok(f"event.language = {language}")
+
     # --- people.instructors ---
     instructors, found = get_field(data, "people.instructors")
     if not found or not instructors:
@@ -263,16 +324,42 @@ def validate(facts_path: Path):
         if not isinstance(helpers, list):
             errors.append("people.helpers must be a YAML list")
         else:
-            _ok(f"people.helpers = {len(helpers)} listed")
+            blanks = [i for i, v in enumerate(helpers) if not v or (isinstance(v, str) and not v.strip())]
+            if blanks:
+                warnings.append(f"people.helpers has blank entries at position(s): {blanks}")
+            else:
+                _ok(f"people.helpers = {len(helpers)} listed")
 
-    # --- people.contact_email ---
-    email, _ = get_field(data, "people.contact_email")
-    if not email:
-        errors.append("people.contact_email is required")
-    elif not is_tbd(email) and not EMAIL_PATTERN.match(str(email)):
-        errors.append(f"people.contact_email '{email}' does not look like a valid email address")
+    # --- people.contact_emails ---
+    # Supports both contact_emails (list, preferred) and legacy contact_email (string)
+    contact_emails, found_list = get_field(data, "people.contact_emails")
+    contact_email_legacy, found_legacy = get_field(data, "people.contact_email")
+
+    if found_list and contact_emails is not None:
+        if not isinstance(contact_emails, list):
+            errors.append("people.contact_emails must be a YAML list")
+        else:
+            bad = [e for e in contact_emails if e and not is_tbd(str(e)) and not EMAIL_PATTERN.match(str(e))]
+            if bad:
+                errors.append(f"people.contact_emails has invalid addresses: {bad}")
+            elif not contact_emails:
+                errors.append("people.contact_emails must contain at least one email address")
+            else:
+                _ok(f"people.contact_emails = {contact_emails}")
+    elif found_legacy and contact_email_legacy:
+        # Legacy single-string field — accept but warn
+        warnings.append(
+            "people.contact_email (singular) is deprecated. "
+            "Use people.contact_emails (list) instead."
+        )
+        if not is_tbd(str(contact_email_legacy)) and not EMAIL_PATTERN.match(str(contact_email_legacy)):
+            errors.append(f"people.contact_email '{contact_email_legacy}' is not a valid email address")
+        else:
+            _ok(f"people.contact_email = {contact_email_legacy} (legacy field)")
     else:
-        _ok(f"people.contact_email = {email}")
+        errors.append(
+            "people.contact_emails is required — provide a list of contact email addresses"
+        )
 
     # --- github.owner ---
     owner, _ = get_field(data, "github.owner")
@@ -339,7 +426,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         path = Path(sys.argv[1])
     else:
-        # Default: look in current directory or parent (if run from scripts/)
         candidates = [Path("workshop-facts.yaml"), Path("../workshop-facts.yaml")]
         path = next((p for p in candidates if p.exists()), Path("workshop-facts.yaml"))
 

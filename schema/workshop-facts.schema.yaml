@@ -1,6 +1,6 @@
 # Schema: workshop-facts.yaml
 # Human-readable field documentation. The authoritative validation logic is in scripts/validate.py.
-# This file is for reference — you do not need to edit it.
+# When these two disagree, scripts/validate.py is correct — update this file to match.
 
 workshop:
   title:
@@ -14,10 +14,10 @@ workshop:
     allowed: [swc, dc, lc, cp, incubator]
     description: |
       Carpentries programme type.
-      swc = Software Carpentry
-      dc  = Data Carpentry
-      lc  = Library Carpentry
-      cp  = Carpentries (generic)
+      swc       = Software Carpentry
+      dc        = Data Carpentry
+      lc        = Library Carpentry
+      cp        = Carpentries (generic)
       incubator = community lesson
 
   curriculum:
@@ -26,10 +26,13 @@ workshop:
     allowed_by_carpentry:
       swc: [swc-inflammation, swc-gapminder]
       dc:  [dc-ecology, dc-astronomy, dc-genomics, dc-geospatial, dc-image, dc-socsci]
-      lc:  [lc]
+      lc:  []         # flexible — any value accepted; lc is common but not required
       cp:  []         # flexible
       incubator: []   # flexible
-    description: Curriculum identifier. Required for DC; recommended for SWC.
+    notes: |
+      Required for DC (build will warn if missing).
+      Recommended for SWC. Flexible for LC, CP, and incubator.
+      The validator warns (not errors) on unknown values for swc.
 
   flavor:
     type: string
@@ -54,7 +57,29 @@ event:
   venue:
     type: string
     required: true
-    description: Human-readable venue name. Use "Online" for virtual workshops.
+    description: Human-readable venue name, e.g. "UCLA Powell Library, Room 230" or "Online (Zoom)"
+
+  address:
+    type: string
+    required: true
+    description: |
+      Full street address for in-person workshops.
+      Use "online" for virtual workshops.
+      Maps to index.md `address` field.
+
+  country:
+    type: string
+    required: true
+    description: |
+      ISO 3166-1 alpha-2 country code, e.g. us, gb, ca, au.
+      Maps to index.md `country` field.
+
+  language:
+    type: string
+    required: true
+    description: |
+      ISO 639-1 language code, e.g. en, fr, es.
+      Maps to index.md `language` field.
 
   host:
     type: string
@@ -79,16 +104,21 @@ people:
     type: list[string]
     required: true
     min_items: 1
-    description: Full names of instructors. Must not contain blank entries.
+    description: Full names of instructors. Blank entries are an error.
 
   helpers:
     type: list[string]
     required: false
-    description: Full names of helpers.
+    description: Full names of helpers. Blank entries produce a warning.
 
-  contact_email:
-    type: email
+  contact_emails:
+    type: list[email]
     required: true
+    min_items: 1
+    description: |
+      List of contact email addresses. Maps to the index.md `email` field (displayed on the workshop page).
+      Use a list even for a single address.
+    deprecated_alias: contact_email   # singular string; accepted with a warning
 
 github:
   owner:
@@ -102,7 +132,7 @@ github:
     pattern: "^\\d{4}-\\d{2}-\\d{2}-[a-z][a-z0-9-]*[a-z0-9]$"
     description: |
       Full repo name. Must follow YYYY-MM-DD-<slug>.
-      The slug must start with a letter and must not end with - or _.
+      Slug must be lowercase, start with a letter, and not end with - or _.
       Must begin with the same date as event.start_date.
 
 lessons:
@@ -130,11 +160,11 @@ links:
   eventbrite_key:
     type: string
     required: false
-    description: Alphanumeric key only — not the full Eventbrite URL.
     nullable: true
+    description: Alphanumeric Eventbrite key only — not the full URL.
 
 schedule_notes:
   type: string
   required: false
   tbd_allowed: true
-  description: Free-text notes for the agent to use when drafting schedule HTML.
+  description: Free-text notes the agent uses when drafting schedule HTML.

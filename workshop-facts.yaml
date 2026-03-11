@@ -15,6 +15,10 @@ event:
   end_date:       # YYYY-MM-DD (same as start_date for single-day)
   mode:           # in-person | online | hybrid
   venue:          # Human-readable venue name, e.g. "UCLA Powell Library, Room 230"
+  address:        # Full street address for in-person (e.g. "620 Charles E Young Dr N, Los Angeles, CA 90095")
+                  # Use "online" for virtual workshops
+  country:        # ISO 3166-1 alpha-2 code, e.g. us | gb | ca | au
+  language:       # ISO 639-1 code, e.g. en | fr | es
   host:           # Hosting institution, e.g. "UCLA Library"
   timezone:       # e.g. PT | ET | UTC
   daily_start:    # HH:MM in 24h, e.g. 09:00
@@ -25,8 +29,9 @@ people:
     -             # Full name
     -
   helpers:
-    -             # Full name, or remove section if none
-  contact_email:  # e.g. yourname@institution.edu
+    -             # Full name, or remove this section if none
+  contact_emails: # List — becomes the index.md `email` field (shown on the workshop page)
+    -             # e.g. yourname@institution.edu
 
 github:
   owner:          # GitHub org or username, e.g. ucla-carpentries

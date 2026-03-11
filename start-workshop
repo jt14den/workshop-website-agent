@@ -1,32 +1,45 @@
 #!/usr/bin/env bash
-# start-workshop — Paved-path entry point for creating a Carpentries workshop website.
-#
-# This script:
-#   1. Runs preflight checks (tools, auth, YAML validation)
-#   2. Shows a summary of the workshop facts
-#   3. Offers to run the bootstrap script (repo creation)
-#   4. Prints the prompt to paste into your AI agent session
+# start-workshop — Paved-path entry point for setting up a Carpentries workshop website.
 #
 # Usage:
-#   ./start-workshop              # interactive
-#   ./start-workshop --skip-bootstrap   # skip repo creation (already done)
+#   ./start-workshop                         # interactive, no agent check
+#   ./start-workshop --agent claude          # also verify the agent CLI is installed
+#   ./start-workshop --agent codex
+#   ./start-workshop --agent gemini
+#   ./start-workshop --agent copilot
+#   ./start-workshop --skip-bootstrap        # skip repo creation (already done or repairing)
+#   ./start-workshop --help
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FACTS_FILE="$SCRIPT_DIR/workshop-facts.yaml"
 SKIP_BOOTSTRAP=false
+AGENT=""
 
 for arg in "$@"; do
     case "$arg" in
         --skip-bootstrap) SKIP_BOOTSTRAP=true ;;
+        --agent=*) AGENT="${arg#--agent=}" ;;
         --help|-h)
-            echo "Usage: ./start-workshop [--skip-bootstrap]"
+            echo "Usage: ./start-workshop [options]"
             echo ""
-            echo "  --skip-bootstrap   Skip repo creation (use if repo already exists)"
+            echo "Options:"
+            echo "  --agent <claude|codex|gemini|copilot>   Also verify the agent CLI is installed"
+            echo "  --skip-bootstrap                        Skip repo creation"
+            echo "  --help                                  Show this help"
             exit 0 ;;
-        *) echo "Unknown argument: $arg  (try --help)"; exit 1 ;;
+        *) ;;
     esac
+done
+
+# Handle "--agent <value>" (two-arg form)
+PREV=""
+for arg in "$@"; do
+    if [[ "$PREV" == "--agent" ]]; then
+        AGENT="$arg"
+    fi
+    PREV="$arg"
 done
 
 # ---------------------------------------------------------------------------
@@ -48,9 +61,9 @@ if [[ ! -f "$FACTS_FILE" ]]; then
     echo ""
     echo "Copy an example to get started, then fill in your event details:"
     echo ""
-    echo "  cp examples/lc-online.yaml workshop-facts.yaml"
+    echo "  cp examples/lc-online.yaml    workshop-facts.yaml"
     echo "  cp examples/swc-inperson.yaml workshop-facts.yaml"
-    echo "  cp examples/dc-multiday.yaml workshop-facts.yaml"
+    echo "  cp examples/dc-multiday.yaml  workshop-facts.yaml"
     echo ""
     exit 1
 fi
@@ -61,14 +74,20 @@ fi
 
 echo "Step 1 of 3: Preflight checks"
 echo ""
-if ! bash "$SCRIPT_DIR/scripts/preflight.sh"; then
+
+PREFLIGHT_ARGS=()
+if [[ -n "$AGENT" ]]; then
+    PREFLIGHT_ARGS+=("--agent" "$AGENT")
+fi
+
+if ! bash "$SCRIPT_DIR/scripts/preflight.sh" "${PREFLIGHT_ARGS[@]}"; then
     echo ""
     echo "Fix the issues above, then re-run:  ./start-workshop"
     exit 1
 fi
 
 # ---------------------------------------------------------------------------
-# Step 2: Show summary
+# Step 2: Workshop summary
 # ---------------------------------------------------------------------------
 
 echo "Step 2 of 3: Workshop summary"
@@ -88,22 +107,27 @@ def get(path, default="(not set)"):
         obj = obj[p]
     return obj if obj is not None else default
 
-def list_items(path):
+def list_str(path):
     val = get(path, [])
     if isinstance(val, list):
         return ", ".join(str(v) for v in val if v)
     return str(val)
 
+owner = get("github.owner")
+repo  = get("github.repo_name")
+
 print(f"  Title:       {get('workshop.title')}")
 print(f"  Type:        {get('workshop.carpentry')} / {get('workshop.curriculum')} / {get('workshop.flavor')}")
 print(f"  Dates:       {get('event.start_date')} to {get('event.end_date')}  ({get('event.mode')})")
 print(f"  Venue:       {get('event.venue')}")
-print(f"  Instructors: {list_items('people.instructors')}")
-print(f"  Repo:        {get('github.owner')}/{get('github.repo_name')}")
-print(f"  Site URL:    https://{get('github.owner')}.github.io/{get('github.repo_name')}/")
+print(f"  Address:     {get('event.address')}")
+print(f"  Country:     {get('event.country')}   Language: {get('event.language')}")
+print(f"  Instructors: {list_str('people.instructors')}")
+print(f"  Emails:      {list_str('people.contact_emails')}")
+print(f"  Repo:        {owner}/{repo}")
+print(f"  Site URL:    https://{owner}.github.io/{repo}/")
 print()
 
-# Show TBD fields
 def find_tbds(obj, path=""):
     found = []
     if isinstance(obj, str) and obj.strip().upper() == "TBD":
@@ -118,34 +142,35 @@ def find_tbds(obj, path=""):
 
 tbds = find_tbds(data)
 if tbds:
-    print(f"  TBD fields ({len(tbds)}):")
+    print(f"  TBD fields ({len(tbds)}) — fill in before or after agent session:")
     for t in tbds:
         print(f"    - {t}")
     print()
 EOF
 
 # ---------------------------------------------------------------------------
-# Step 3: Bootstrap (optional)
+# Step 3: Bootstrap
 # ---------------------------------------------------------------------------
 
 if [[ "$SKIP_BOOTSTRAP" == "true" ]]; then
     echo "Step 3 of 3: Bootstrap — skipped (--skip-bootstrap)"
     echo ""
 else
-    echo "Step 3 of 3: Create the GitHub repository"
+    echo "Step 3 of 3: Create or repair the GitHub repository"
     echo ""
     echo "  This will:"
-    echo "    - Create the repo from the Carpentries template"
-    echo "    - Clone it locally (next to this kit directory)"
+    echo "    - Create the repo from the Carpentries template (or skip if it exists)"
+    echo "    - Enforce gh-pages as the default branch"
+    echo "    - Clone the repo locally (next to this kit directory)"
     echo "    - Create _includes/syllabus.html"
     echo "    - Enable GitHub Pages"
     echo ""
-    read -r -p "  Run a dry-run first to preview? [Y/n] " DRY
+    read -r -p "  Preview with --dry-run first? [Y/n] " DRY
     DRY="${DRY:-Y}"
     if [[ "$DRY" =~ ^[Yy]$ ]]; then
         bash "$SCRIPT_DIR/scripts/bootstrap-repo.sh" --dry-run
         echo ""
-        read -r -p "  Looks good? Run for real? [y/N] " CONFIRM
+        read -r -p "  Run for real? [y/N] " CONFIRM
         CONFIRM="${CONFIRM:-N}"
         if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
             bash "$SCRIPT_DIR/scripts/bootstrap-repo.sh"
@@ -154,12 +179,12 @@ else
             echo ""
         fi
     else
-        read -r -p "  Create the repo now? [y/N] " CONFIRM
+        read -r -p "  Create/repair the repo now? [y/N] " CONFIRM
         CONFIRM="${CONFIRM:-N}"
         if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
             bash "$SCRIPT_DIR/scripts/bootstrap-repo.sh"
         else
-            echo "  Skipped. You can run the bootstrap manually:"
+            echo "  Skipped. Run manually when ready:"
             echo "    bash scripts/bootstrap-repo.sh"
             echo ""
         fi
@@ -167,7 +192,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Agent prompt
+# Agent launch instructions
 # ---------------------------------------------------------------------------
 
 echo ""
@@ -175,19 +200,32 @@ echo "=================================================="
 echo "  Ready to start your agent session"
 echo "=================================================="
 echo ""
-echo "  1. Start your agent CLI from this directory:"
+
+if [[ -n "$AGENT" ]]; then
+    case "$AGENT" in
+        claude)  echo "  Start Claude Code:"; echo "    claude" ;;
+        codex)   echo "  Start Codex:";       echo "    codex" ;;
+        gemini)  echo "  Start Gemini CLI:";  echo "    gemini" ;;
+        copilot) echo "  Start Copilot:";     echo "    gh copilot suggest" ;;
+    esac
+else
+    echo "  Start your agent CLI from this directory:"
+    echo ""
+    echo "    claude          (Claude Code)"
+    echo "    codex           (OpenAI Codex CLI)"
+    echo "    gemini          (Gemini CLI)"
+    echo "    gh copilot suggest   (GitHub Copilot)"
+fi
+
 echo ""
-echo "       claude          (Claude Code)"
-echo "       gemini          (Gemini CLI)"
-echo "       gh copilot      (GitHub Copilot CLI)"
-echo ""
-echo "  2. Paste this prompt to begin:"
+echo "  Paste this prompt to begin:"
 echo ""
 echo "  ┌─────────────────────────────────────────────────────────────────────┐"
 echo "  │ Read instructions/core.md, then workshop-facts.yaml, then help me   │"
 echo "  │ configure the Carpentries workshop website. Confirm the facts, then  │"
-echo "  │ proceed step by step: _config.yml, index.md front matter, schedule  │"
-echo "  │ HTML, and any known fixes needed for this workshop type.             │"
+echo "  │ proceed step by step: _config.yml, index.md front matter (including  │"
+echo "  │ address, country, language, and the email list), schedule HTML, and  │"
+echo "  │ any fixes needed for this workshop type.                             │"
 echo "  └─────────────────────────────────────────────────────────────────────┘"
 echo ""
 echo "  After the agent session, generate your summary:"

@@ -12,6 +12,9 @@ event:
   end_date: 2026-05-20
   mode: online
   venue: "UC Carpentries (Online)"
+  address: "online"
+  country: us
+  language: en
   host: "UCLA Library"
   timezone: "PT"
   daily_start: "09:00"
@@ -24,7 +27,8 @@ people:
     - "Jamie Jamison"
   helpers:
     - "Dave George"
-  contact_email: "tdennis@library.ucla.edu"
+  contact_emails:
+    - "tdennis@library.ucla.edu"
 
 github:
   owner: jt14den

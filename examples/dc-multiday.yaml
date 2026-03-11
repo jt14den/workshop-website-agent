@@ -1,4 +1,4 @@
-# Example: Data Carpentry (Ecology) — online, 4-day spread across 2 weeks
+# Example: Data Carpentry (Ecology) — online, 4 sessions across 2 weeks
 # Copy to workshop-facts.yaml and edit for your event.
 
 workshop:
@@ -12,6 +12,9 @@ event:
   end_date: 2026-10-14
   mode: online
   venue: "Online (Zoom)"
+  address: "online"
+  country: us
+  language: en
   host: "University Library Consortium"
   timezone: "ET"
   daily_start: "13:00"
@@ -23,7 +26,8 @@ people:
     - "David Kim"
   helpers:
     - "Fatima Hassan"
-  contact_email: "carpentries@university.edu"
+  contact_emails:
+    - "carpentries@university.edu"
 
 github:
   owner: university-library
@@ -45,10 +49,10 @@ links:
   eventbrite_key: null
 
 schedule_notes: |
-  4 sessions spread over 2 weeks (Mon/Wed pattern), 1:00 PM – 5:00 PM ET.
-  Session 1 (Oct 5):  Spreadsheets (full session, ~4 hrs)
-  Session 2 (Oct 7):  OpenRefine (full session, ~4 hrs)
-  Session 3 (Oct 12): R — data import, dplyr, tidyr (~4 hrs)
-  Session 4 (Oct 14): R — ggplot2 + SQL intro (~4 hrs)
+  4 sessions across 2 weeks (Mon/Wed), 1:00 PM – 5:00 PM ET each day.
+  Session 1 (Oct 5):  Spreadsheets (full session)
+  Session 2 (Oct 7):  OpenRefine (full session)
+  Session 3 (Oct 12): R — data import, dplyr, tidyr
+  Session 4 (Oct 14): R — ggplot2 + SQL intro
   15-minute break at 2:45 PM each session.
   Final 15 minutes each day: exercises, wrap-up, preview of next session.

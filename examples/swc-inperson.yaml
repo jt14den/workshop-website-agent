@@ -11,7 +11,10 @@ event:
   start_date: 2026-09-14
   end_date: 2026-09-15
   mode: in-person
-  venue: "UCLA Powell Library, Room 230, Los Angeles, CA"
+  venue: "UCLA Powell Library, Room 230"
+  address: "620 Charles E Young Dr N, Los Angeles, CA 90095"
+  country: us
+  language: en
   host: "UCLA Library Data Science Center"
   timezone: "PT"
   daily_start: "09:00"
@@ -24,7 +27,8 @@ people:
   helpers:
     - "Priya Patel"
     - "Jordan Wu"
-  contact_email: "workshops@library.ucla.edu"
+  contact_emails:
+    - "workshops@library.ucla.edu"
 
 github:
   owner: ucla-data-science-center
