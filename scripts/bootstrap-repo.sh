@@ -143,9 +143,20 @@ else
         info "Remote default branch is '$REMOTE_DEFAULT' — setting to gh-pages"
         # Ensure gh-pages exists on remote (template should have it; create if missing)
         if ! gh api "repos/$FULL_REPO/branches/gh-pages" &>/dev/null 2>&1; then
-            warn "gh-pages branch not found on remote."
-            warn "This may mean the template did not initialize correctly."
-            warn "Check https://github.com/$FULL_REPO/branches and create gh-pages manually if needed."
+            echo ""
+            echo "ERROR: gh-pages branch does not exist on https://github.com/$FULL_REPO"
+            echo ""
+            echo "  This means the repo was not created from the Carpentries workshop-template,"
+            echo "  or the template failed to initialize correctly."
+            echo ""
+            echo "  To recover:"
+            echo "    1. Delete the repo:  gh repo delete $FULL_REPO --yes"
+            echo "    2. Re-run bootstrap: bash scripts/bootstrap-repo.sh"
+            echo ""
+            echo "  If you need to keep the existing repo, create gh-pages manually:"
+            echo "    https://github.com/carpentries/workshop-template (use 'Use this template')"
+            echo ""
+            exit 1
         else
             gh api \
                 --method PATCH \
@@ -192,9 +203,17 @@ elif [[ -d "$CLONE_DIR/.git" ]]; then
             git -C "$CLONE_DIR" checkout -b gh-pages origin/gh-pages
             ok "Checked out gh-pages from remote"
         else
-            warn "gh-pages branch not found locally or on remote."
-            warn "This repo may not have been created from the Carpentries template."
-            warn "See: https://github.com/carpentries/workshop-template"
+            echo ""
+            echo "ERROR: gh-pages branch does not exist locally or on remote."
+            echo ""
+            echo "  The repo at https://github.com/$FULL_REPO does not appear to have been"
+            echo "  created from the Carpentries workshop-template."
+            echo ""
+            echo "  To recover:"
+            echo "    1. Delete the repo:  gh repo delete $FULL_REPO --yes"
+            echo "    2. Re-run bootstrap: bash scripts/bootstrap-repo.sh"
+            echo ""
+            exit 1
         fi
     fi
 else

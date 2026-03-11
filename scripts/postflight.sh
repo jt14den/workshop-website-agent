@@ -17,6 +17,7 @@ FACTS_FILE="$KIT_DIR/workshop-facts.yaml"
 # ---------------------------------------------------------------------------
 
 read_fact() {
+    # Reads a scalar field; returns empty string if missing or null.
     python3 - "$FACTS_FILE" "$1" <<'EOF'
 import sys, yaml
 data = yaml.safe_load(open(sys.argv[1]))
@@ -24,10 +25,25 @@ parts = sys.argv[2].split(".")
 obj = data
 for p in parts:
     if not isinstance(obj, dict) or p not in obj:
-        print("")
-        sys.exit(0)
+        print(""); sys.exit(0)
     obj = obj[p]
 print("" if obj is None else str(obj))
+EOF
+}
+
+read_email() {
+    # Reads people.contact_emails (list) with fallback to legacy people.contact_email (string).
+    python3 - "$FACTS_FILE" <<'EOF'
+import sys, yaml
+data = yaml.safe_load(open(sys.argv[1]))
+people = data.get("people", {}) or {}
+emails = people.get("contact_emails")
+if isinstance(emails, list):
+    print(", ".join(str(e) for e in emails if e))
+elif people.get("contact_email"):
+    print(str(people["contact_email"]))
+else:
+    print("")
 EOF
 }
 
@@ -38,7 +54,7 @@ START=$(read_fact "event.start_date")
 END=$(read_fact "event.end_date")
 MODE=$(read_fact "event.mode")
 VENUE=$(read_fact "event.venue")
-EMAIL=$(read_fact "people.contact_email")
+EMAIL=$(read_email)
 REGISTRATION=$(read_fact "links.registration")
 NOTES_LINK=$(read_fact "links.collaborative_notes")
 
