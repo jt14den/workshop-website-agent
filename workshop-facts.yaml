@@ -1,0 +1,49 @@
+# Workshop Facts
+# Fill in this file before running ./start-workshop
+# Validate at any time with: python3 scripts/validate.py
+# See examples/ for complete filled-in samples.
+# See schema/workshop-facts.schema.yaml for field documentation.
+
+workshop:
+  title:          # Full workshop title, e.g. "UC Library Carpentry Workshop"
+  carpentry:      # swc | dc | lc | cp | incubator
+  curriculum:     # See schema for valid values per carpentry type. Use TBD if unsure.
+  flavor:         # python | r | null (omit or leave null if not applicable)
+
+event:
+  start_date:     # YYYY-MM-DD
+  end_date:       # YYYY-MM-DD (same as start_date for single-day)
+  mode:           # in-person | online | hybrid
+  venue:          # Human-readable venue name, e.g. "UCLA Powell Library, Room 230"
+  host:           # Hosting institution, e.g. "UCLA Library"
+  timezone:       # e.g. PT | ET | UTC
+  daily_start:    # HH:MM in 24h, e.g. 09:00
+  daily_end:      # HH:MM in 24h, e.g. 12:00
+
+people:
+  instructors:
+    -             # Full name
+    -
+  helpers:
+    -             # Full name, or remove section if none
+  contact_email:  # e.g. yourname@institution.edu
+
+github:
+  owner:          # GitHub org or username, e.g. ucla-carpentries
+  repo_name:      # Full repo name: YYYY-MM-DD-<slug>, e.g. 2026-05-11-uc-lc
+
+lessons:
+  - name:         # Lesson title, e.g. "Library Carpentry: The Unix Shell"
+    url:          # Official lesson URL
+  - name:
+    url:
+
+links:
+  registration:        TBD   # Registration URL or TBD
+  collaborative_notes: TBD   # Etherpad/HackMD URL or TBD
+  eventbrite_key:      null  # Alphanumeric Eventbrite key only (not full URL), or null
+
+# Free-text notes for the agent to use when drafting the schedule HTML.
+# Describe timing, breaks, and which lessons are taught on which days.
+schedule_notes: |
+  TBD

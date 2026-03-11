@@ -1,0 +1,54 @@
+# Example: Data Carpentry (Ecology) — online, 4-day spread across 2 weeks
+# Copy to workshop-facts.yaml and edit for your event.
+
+workshop:
+  title: "Data Carpentry: Ecology Workshop"
+  carpentry: dc
+  curriculum: dc-ecology
+  flavor: r
+
+event:
+  start_date: 2026-10-05
+  end_date: 2026-10-14
+  mode: online
+  venue: "Online (Zoom)"
+  host: "University Library Consortium"
+  timezone: "ET"
+  daily_start: "13:00"
+  daily_end: "17:00"
+
+people:
+  instructors:
+    - "Maria Chen"
+    - "David Kim"
+  helpers:
+    - "Fatima Hassan"
+  contact_email: "carpentries@university.edu"
+
+github:
+  owner: university-library
+  repo_name: "2026-10-05-ecology-online"
+
+lessons:
+  - name: "Data Carpentry: Ecology — Data Organization in Spreadsheets"
+    url: "https://datacarpentry.org/spreadsheet-ecology-lesson/"
+  - name: "Data Carpentry: Ecology — Data Cleaning with OpenRefine"
+    url: "https://datacarpentry.org/OpenRefine-ecology-lesson/"
+  - name: "Data Carpentry: Ecology — Data Analysis and Visualization in R"
+    url: "https://datacarpentry.org/R-ecology-lesson/"
+  - name: "Data Carpentry: Ecology — Data Management with SQL"
+    url: "https://datacarpentry.org/sql-ecology-lesson/"
+
+links:
+  registration: TBD
+  collaborative_notes: TBD
+  eventbrite_key: null
+
+schedule_notes: |
+  4 sessions spread over 2 weeks (Mon/Wed pattern), 1:00 PM – 5:00 PM ET.
+  Session 1 (Oct 5):  Spreadsheets (full session, ~4 hrs)
+  Session 2 (Oct 7):  OpenRefine (full session, ~4 hrs)
+  Session 3 (Oct 12): R — data import, dplyr, tidyr (~4 hrs)
+  Session 4 (Oct 14): R — ggplot2 + SQL intro (~4 hrs)
+  15-minute break at 2:45 PM each session.
+  Final 15 minutes each day: exercises, wrap-up, preview of next session.

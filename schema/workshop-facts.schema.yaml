@@ -1,0 +1,140 @@
+# Schema: workshop-facts.yaml
+# Human-readable field documentation. The authoritative validation logic is in scripts/validate.py.
+# This file is for reference — you do not need to edit it.
+
+workshop:
+  title:
+    type: string
+    required: true
+    description: Full display title of the workshop
+
+  carpentry:
+    type: string
+    required: true
+    allowed: [swc, dc, lc, cp, incubator]
+    description: |
+      Carpentries programme type.
+      swc = Software Carpentry
+      dc  = Data Carpentry
+      lc  = Library Carpentry
+      cp  = Carpentries (generic)
+      incubator = community lesson
+
+  curriculum:
+    type: string
+    required: false
+    allowed_by_carpentry:
+      swc: [swc-inflammation, swc-gapminder]
+      dc:  [dc-ecology, dc-astronomy, dc-genomics, dc-geospatial, dc-image, dc-socsci]
+      lc:  [lc]
+      cp:  []         # flexible
+      incubator: []   # flexible
+    description: Curriculum identifier. Required for DC; recommended for SWC.
+
+  flavor:
+    type: string
+    required: false
+    allowed: [python, r, null]
+    description: Language flavor. Relevant for SWC and DC workshops.
+
+event:
+  start_date:
+    type: date      # YYYY-MM-DD
+    required: true
+
+  end_date:
+    type: date      # YYYY-MM-DD; must be >= start_date
+    required: true
+
+  mode:
+    type: string
+    required: true
+    allowed: [in-person, online, hybrid]
+
+  venue:
+    type: string
+    required: true
+    description: Human-readable venue name. Use "Online" for virtual workshops.
+
+  host:
+    type: string
+    required: false
+    description: Hosting institution name.
+
+  timezone:
+    type: string
+    required: false
+    example: "PT"
+
+  daily_start:
+    type: time      # HH:MM 24h
+    required: false
+
+  daily_end:
+    type: time      # HH:MM 24h
+    required: false
+
+people:
+  instructors:
+    type: list[string]
+    required: true
+    min_items: 1
+    description: Full names of instructors. Must not contain blank entries.
+
+  helpers:
+    type: list[string]
+    required: false
+    description: Full names of helpers.
+
+  contact_email:
+    type: email
+    required: true
+
+github:
+  owner:
+    type: string
+    required: true
+    description: GitHub org or personal username.
+
+  repo_name:
+    type: string
+    required: true
+    pattern: "^\\d{4}-\\d{2}-\\d{2}-[a-z][a-z0-9-]*[a-z0-9]$"
+    description: |
+      Full repo name. Must follow YYYY-MM-DD-<slug>.
+      The slug must start with a letter and must not end with - or _.
+      Must begin with the same date as event.start_date.
+
+lessons:
+  type: list
+  required: false
+  items:
+    name:
+      type: string
+      required: true
+    url:
+      type: string
+      required: false
+
+links:
+  registration:
+    type: string
+    required: false
+    tbd_allowed: true
+
+  collaborative_notes:
+    type: string
+    required: false
+    tbd_allowed: true
+
+  eventbrite_key:
+    type: string
+    required: false
+    description: Alphanumeric key only — not the full Eventbrite URL.
+    nullable: true
+
+schedule_notes:
+  type: string
+  required: false
+  tbd_allowed: true
+  description: Free-text notes for the agent to use when drafting schedule HTML.

@@ -1,0 +1,51 @@
+# Example: Software Carpentry — in-person, 2-day
+# Copy to workshop-facts.yaml and edit for your event.
+
+workshop:
+  title: "Software Carpentry Workshop — UCLA"
+  carpentry: swc
+  curriculum: swc-gapminder
+  flavor: python
+
+event:
+  start_date: 2026-09-14
+  end_date: 2026-09-15
+  mode: in-person
+  venue: "UCLA Powell Library, Room 230, Los Angeles, CA"
+  host: "UCLA Library Data Science Center"
+  timezone: "PT"
+  daily_start: "09:00"
+  daily_end: "17:00"
+
+people:
+  instructors:
+    - "Jane Smith"
+    - "Carlos Reyes"
+  helpers:
+    - "Priya Patel"
+    - "Jordan Wu"
+  contact_email: "workshops@library.ucla.edu"
+
+github:
+  owner: ucla-data-science-center
+  repo_name: "2026-09-14-ucla"
+
+lessons:
+  - name: "The Unix Shell"
+    url: "https://swcarpentry.github.io/shell-novice/"
+  - name: "Version Control with Git"
+    url: "https://swcarpentry.github.io/git-novice/"
+  - name: "Programming with Python"
+    url: "https://swcarpentry.github.io/python-novice-gapminder/"
+
+links:
+  registration: TBD
+  collaborative_notes: TBD
+  eventbrite_key: null
+
+schedule_notes: |
+  Full 2-day in-person format, 9:00 AM – 5:00 PM PT each day.
+  Day 1: Unix Shell (morning, ~3 hrs) + Git intro (afternoon, ~3 hrs)
+  Day 2: Python with Gapminder dataset (full day)
+  Breaks: 30 min morning break, 1 hr lunch, 15 min afternoon break each day.
+  Wrap-up and survey at 4:45 PM on Day 2.

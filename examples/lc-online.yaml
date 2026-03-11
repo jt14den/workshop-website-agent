@@ -1,0 +1,57 @@
+# Example: Library Carpentry — online, multi-day
+# Copy to workshop-facts.yaml and edit for your event.
+
+workshop:
+  title: "UC Library Carpentry Workshop"
+  carpentry: lc
+  curriculum: lc
+  flavor: python
+
+event:
+  start_date: 2026-05-11
+  end_date: 2026-05-20
+  mode: online
+  venue: "UC Carpentries (Online)"
+  host: "UCLA Library"
+  timezone: "PT"
+  daily_start: "09:00"
+  daily_end: "12:00"
+
+people:
+  instructors:
+    - "Tim Dennis"
+    - "Cody Hennesy"
+    - "Jamie Jamison"
+  helpers:
+    - "Dave George"
+  contact_email: "tdennis@library.ucla.edu"
+
+github:
+  owner: jt14den
+  repo_name: "2026-05-11-uc-lc"
+
+lessons:
+  - name: "Library Carpentry: The Unix Shell"
+    url: "https://librarycarpentry.org/lc-shell/"
+  - name: "Library Carpentry: Introduction to Git"
+    url: "https://librarycarpentry.org/lc-git/"
+  - name: "Library Carpentry: OpenRefine"
+    url: "https://librarycarpentry.org/lc-open-refine/"
+  - name: "Library Carpentry: Introduction to Python"
+    url: "https://librarycarpentry.org/lc-python-intro/"
+
+links:
+  registration: TBD
+  collaborative_notes: TBD
+  eventbrite_key: null
+
+schedule_notes: |
+  3 hours daily (9:00 AM – 12:00 PM PT), 2-week format.
+  Day 1: Unix Shell — full session
+  Day 2: Unix Shell wrap-up + Git intro
+  Day 3: Git continued
+  Day 4: OpenRefine — full session
+  Day 5: Python intro — full session
+  Include a 15-minute break at 10:15 each day.
+  End each day with a 15-minute wrap-up and Q&A block.
+  Python install instructions need to be added to _includes/lc/setup.html.
